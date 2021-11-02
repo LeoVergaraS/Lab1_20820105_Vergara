@@ -4,14 +4,14 @@
 (require "TDAusuario.rkt")
 ; TDA DocsDuck
 ; Constructor de paradigmadocs
-(define paradigmadocs(lambda (nombre fecha funcionEncriptado funcionDesencriptado)
+(define paradigmadocs(lambda (nombre fechacreacion funcionEncriptado funcionDesencriptado)
                   (if (and (string? nombre)
-                           (fecha? fecha)
+                           (fecha? fechacreacion)
                            (string? funcionEncriptado)
                            (string? funcionDesencriptado)
                            )
                       ; Caso verdadero
-                      (list nombre fecha funcionEncriptado funcionDesencriptado (list (usuario "admin" "adminpass")))
+                      (list nombre fechacreacion funcionEncriptado funcionDesencriptado (list (usuario "admin" "adminpass" (fecha  1 11 2021))))
                       ; Caso Falso
                       null
                       )

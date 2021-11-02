@@ -2,12 +2,13 @@
 (provide (all-defined-out))
 
 ; contructor TDA documento
-(define documento(lambda (nombredocumento contenido)
-                   (if (and (string? nombredocumento)
+(define documento(lambda (id nombredocumento contenido)
+                   (if (and (integer? id)
+                            (string? nombredocumento)
                             (string? contenido)
                             )
                        ; caso verdadero
-                       (list nombredocumento contenido)
+                       (list id nombredocumento contenido)
                        ; caso falso
                        null
                        )
@@ -16,26 +17,33 @@
 
 ; pertenencia
 (define documento?(lambda (documento)
-                    (and (string? (car documento))
+                    (and (integer? (car documento))
                          (string? (cadr documento))
+                         (string? (caddr documento))
                          )
                     )
   )
 
 ; selector
+(define getiddocumento(lambda (documento)
+                        (car documento)
+                        )
+  )
+
 (define getnombredocumento (lambda (documento)
-                             (car documento)
+                             (cadr documento)
                              )
   )
 
 (define getcontenido (lambda (documento)
-                       (cadr documento)
+                       (caddr documento)
                        )
   )
 
 ; modificadores
 (define setnombredocumento(lambda (documento nombredocumento)
-                            (documento  nombredocumento
+                            (documento (getiddocumento documento)
+                                        nombredocumento
                                        (getcontenido documento)
                                        )
                             )
