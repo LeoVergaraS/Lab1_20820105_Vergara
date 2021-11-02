@@ -1,37 +1,48 @@
 #lang racket
-; TDA FECHA:
-; Constructor tda de fecha.
-; dominio: 3 enteros positivos + {0}
-; recorrido: Una lista
-(define fecha(lambda (dia mes anio) (list dia mes anio)))
-; Selectores tda fecha.
-(define getDia car)
-(define getMes(lambda(lista)
-                (car(cdr lista))))
-(define getAnio(lambda(lista)
-                 (car(cdr(cdr lista)))))
-; Modificadores tda lista
-(define setDia(lambda(lista dia)
-                (list dia (getMes lista) (getAnio lista))))
-(define setMes(lambda(lista mes)
-                (list (getDia lista) mes (getAnio lista))))
-(define setAnio(lambda(lista anio)
-                 (list (getDia lista) (getMes lista) anio)))
+(require "TDAfecha.rkt")
+(require "TDAparadigmadocs.rkt")
+(require "TDAdocumento.rkt")
+(require "TDAusuario.rkt")
+
+(define DuckDocsVacio(paradigmadocs "DuckDocs" (fecha 1 11 2021) "Fe" "Fd"))
+
+; Register
+(define verificarUsuario(lambda (listaUsuario usuario)
+                          (if (null? listaUsuario)
+                              ; caso verdadero
+                              #f
+                              ; caso falso
+                              (if (equal? (getNombreusuario(car listaUsuario)) usuario)
+                                  ; caso verdadero
+                                  #t
+                                  ; caso falso
+                                  (verificarUsuario (cdr listaUsuario) usuario)
+                                  )
+                              )
+                          )
+  )
+
+(define actualizarLista(lambda (listaUsuario nombreusuario contrasenia)
+                         (if (null? listaUsuario)
+                             ; caso verdadero
+                             (cons (usuario nombreusuario contrasenia) null)
+                             ; caso falso
+                             (cons (car listaUsuario) (actualizarLista (cdr listaUsuario) nombreusuario contrasenia))
+                             )
+                         )
+  )
+
+(define register (lambda (paradigmadocs fecha nombreusuario contrasenia)
+                  (if (verificarUsuario (getListaUsuario paradigmadocs) nombreusuario)
+                      ; caso verdadero
+                      paradigmadocs
+                      ; caso falso
+                      (setListaUsuario paradigmadocs (actualizarLista (getListaUsuario paradigmadocs) nombreusuario contrasenia))
+                      )
+                     )
+  )
 
 
-; TDA DocsDuck
-; Constructor de DocsDuck
-(define DocsDuck(lambda (nombre fecha funcionEncriptado funcionDesencriptado)
-                  (list nombre fecha funcionEncriptado funcionDesencriptado)))
-; Selectores
-(define getNombre car)
-(define getFecha(lambda(lista)
-                  (car(cdr lista))))
-(define getFE(lambda(lista)
-                  (car(cdr(cdr lista)))))
-(define getFD(lambda(lista)
-                  (car(cdr(cdr(cdr lista))))))
-
-
-
-
+(define gDocs1
+(register (register (register DuckDocsVacio (fecha 25 10 2021) "user1" "pass1") (fecha 25 10 2021) "user2"
+"pass2") (fecha 25 10 2021) "user3" "pass3"))

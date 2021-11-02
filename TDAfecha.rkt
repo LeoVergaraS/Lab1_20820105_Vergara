@@ -1,4 +1,5 @@
 #lang racket
+(provide (all-defined-out))
 ; TDA FECHA:
 ; Constructor tda de fecha.
 ; dominio: 3 enteros positivos + {0}
@@ -37,40 +38,21 @@
 
 ; Modificadores tda lista
 (define setDia(lambda(lista dia)
-                (list dia
-                      (getMes lista)
-                      (getAnio lista)
-                      )
+                (fecha dia
+                       (getMes lista)
+                       (getAnio lista))
                 )
   )
 (define setMes(lambda(lista mes)
-                (list (getDia lista)
+                (fecha (getDia lista)
                        mes
                       (getAnio lista)
                       )
                 )
   )
 (define setAnio(lambda(lista anio)
-                 (list (getDia lista)
+                 (fecha (getDia lista)
                        (getMes lista)
                         anio)
                  )
   )
-
-
-; TDA DocsDuck
-; Constructor de DocsDuck
-(define DocsDuck(lambda (nombre fecha funcionEncriptado funcionDesencriptado)
-                  (list nombre fecha funcionEncriptado funcionDesencriptado)))
-; Selectores
-(define getNombre car)
-(define getFecha(lambda(lista)
-                  (car(cdr lista))))
-(define getFE(lambda(lista)
-                  (car(cdr(cdr lista)))))
-(define getFD(lambda(lista)
-                  (car(cdr(cdr(cdr lista))))))
-
-
-
-
