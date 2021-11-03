@@ -1,14 +1,16 @@
 #lang racket
 (provide (all-defined-out))
+(require "TDAfecha.rkt")
 
 ; contructor TDA documento
-(define documento(lambda (id nombredocumento contenido)
-                   (if (and (integer? id)
+(define documento(lambda (autor fecha nombredocumento contenido)
+                   (if (and (string? autor)
+                            (fecha? fecha)
                             (string? nombredocumento)
                             (string? contenido)
                             )
                        ; caso verdadero
-                       (list id nombredocumento contenido)
+                       (list autor fecha nombredocumento contenido)
                        ; caso falso
                        null
                        )
@@ -17,34 +19,41 @@
 
 ; pertenencia
 (define documento?(lambda (documento)
-                    (and (integer? (car documento))
-                         (string? (cadr documento))
-                         (string? (caddr documento))
-                         )
+                    (and (string? (car documento))
+                            (fecha? (cadr documento))
+                            (string? (caddr documento))
+                            (string? (cadddr documento))
+                            )
                     )
   )
 
 ; selector
-(define getiddocumento(lambda (documento)
+(define getAutor(lambda (documento)
                         (car documento)
                         )
   )
 
-(define getnombredocumento (lambda (documento)
+(define getFechaCreacion(lambda (documento)
                              (cadr documento)
                              )
   )
 
-(define getcontenido (lambda (documento)
-                       (caddr documento)
+(define getNombreDocumento(lambda (documento)
+                             (caddr documento)
+                             )
+  )
+
+(define getContenido (lambda (documento)
+                       (cadddr documento)
                        )
   )
 
 ; modificadores
-(define setnombredocumento(lambda (documento nombredocumento)
-                            (documento (getiddocumento documento)
+(define setNombreDocumento(lambda (documento nombredocumento)
+                            (documento (getAutor documento)
+                                       (getFechaCreacion documento)
                                         nombredocumento
-                                       (getcontenido documento)
+                                       (getContenido documento)
                                        )
                             )
   )

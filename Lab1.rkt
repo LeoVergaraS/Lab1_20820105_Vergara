@@ -50,6 +50,20 @@
 
 
 ; login
+(define des->con(lambda(listausuario nombreusuario)
+                  (if (null? listausuario)
+                      ; caso verdadero
+                      null
+                      ; caso falso
+                      (if (equal? (getNombreusuario (car listausuario)) nombreusuario)
+                          ; caso verdadero
+                          (cons (setEstado (car listausuario) "Conectado") (des->con (cdr listausuario) nombreusuario))
+                          ; caso falso
+                          (cons (car listausuario) (des->con (cdr listausuario) nombreusuario))
+                          )
+                      )
+                  )
+  )
 
 (define posicionUsuario(lambda(lista usuario i)
                      (if (equal? (getNombreusuario(car lista)) usuario)
@@ -65,13 +79,91 @@
                    ; caso verdadero
                    (if (equal? (getContrasenia(list-ref (getListaUsuario paradigmadocs) (posicionUsuario (getListaUsuario paradigmadocs) nombreusuario 0))) contrasenia)
                        ; caso verdadero
-                       paradigmadocs
+                       (funcion (setListaUsuario paradigmadocs (des->con (getListaUsuario paradigmadocs) nombreusuario)))
                        ; caso falso
-                       funcion
+                       (funcion paradigmadocs)
                        )
                    ; caso falso
-                   funcion
+                   (funcion paradigmadocs)
                )
   ))
 
-(define gDocs2 (login gDocs1 "user1" "pass2" (lambda(n)(>= n 1))))
+
+
+; create
+(define conectado? (lambda (listausuarios)
+                     (if (null? listausuarios)
+                         ; caso verdadero
+                         #f
+                         ; caso falso
+                         (if (equal? (getestado (car listausuarios)) "Conectado")
+                             ; caso verdadero
+                             #t
+                             ; caso falso
+                             (conectado? (cdr listausuarios))
+                             )
+                         )
+                     )
+  )
+
+(define buscarConectado(lambda(lista)
+                     (if (equal? (getestado(car lista)) "Conectado")
+                         ; caso verdadero
+                         (car lista)
+                         ; caso falso
+                         (buscarConectado (cdr lista))
+                         )
+                         )
+  )
+
+(define agregarDocumento(lambda (lista autor fecha nombre contenido)
+                          (if (null? lista)
+                              ; caso verdadero
+                              (cons (documento autor fecha nombre contenido) null)
+                              ; caso falso
+                              (agregarDocumento (cdr lista) autor fecha nombre contenido)
+                              )
+                          )
+  )
+
+(define agregaLista(lambda(lista usuario)
+                     (if (null? lista)
+                         ; caso verdadero
+                         null
+                         ; caso falso
+                        (if (equal? (getestado(car lista)) "Conectado")
+                            ; caso verdadero
+                            (cons usuario (agregaLista (cdr lista) usuario))
+                            ; caso falso
+                            (cons (car lista) (agregaLista (cdr lista) usuario))
+                         )
+                     )
+  ))
+
+
+(define create(lambda (paradigmadocs)(lambda(fecha nombre contenido)
+                                       (if (conectado? (getListaUsuario paradigmadocs))
+                                           ; caso verdadero
+                                           (setListaUsuario paradigmadocs
+                                                            (agregaLista (getListaUsuario paradigmadocs)
+                                                                         (setEstado (setListaDocumentos(buscarConectado(getListaUsuario paradigmadocs))
+                                                                           (agregarDocumento(getListaDocumentos
+                                                                                             (buscarConectado
+                                                                                              (getListaUsuario paradigmadocs)))
+                                                                                            (getNombreusuario
+                                                                                             (buscarConectado
+                                                                                              (getListaUsuario paradigmadocs)))
+                                                                                            fecha
+                                                                                            nombre
+                                                                                            contenido)
+                                                              ) "Desconectado")
+                                                        ))
+                                           ; caso falso
+                                           paradigmadocs
+                                           )
+                                       )
+                )
+  )
+
+(define gDocs3 ((login gDocs1 "user2" "pass2" create) (fecha 30 08 2021) "doc0" "contenido doc0"))
+(define gDocs4 ((login gDocs3 "user1" "pass1" create) (fecha 30 08 2021) "doc1" "contenido doc1"))

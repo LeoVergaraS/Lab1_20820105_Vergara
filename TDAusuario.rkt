@@ -11,7 +11,7 @@
                            (fecha? fecharegistro)
                            )
                       ; caso verdadero
-                      (list nombreusuario contrasenia fecharegistro (list (documento 0 "" "")) (list(acceso 0 (fecha 0 0 0) (fecha 0 0 0))))
+                      (list nombreusuario contrasenia fecharegistro (list (documento "" (fecha 0 0 0) "" "")) "Desconectado")
                       ; caso falso
                       null
                       )
@@ -22,6 +22,7 @@
 (define usuario?(lambda (usuario)
                    (and (string? (car usuario))
                         (string? (cadr usuario))
+                        (fecha? (caddr usuario))
                        )
                    )
   )
@@ -45,7 +46,7 @@
                              (cadddr usuario)
                              )
   )
-(define getlistaacceso (lambda (usuario)
+(define getestado(lambda (usuario)
                              (cadddr (cdr usuario))
                              )
   )
@@ -56,7 +57,7 @@
                                     (getContrasenia usuario)
                                     (getfecha usuario)
                                     (getListaDocumentos usuario)
-                                    (getlistaacceso usuario))
+                                    (getestado usuario))
                            )
   )
 (define setContrasenia (lambda (usuario contrasenia)
@@ -64,7 +65,7 @@
                                      contrasenia
                                     (getfecha usuario)
                                     (getListaDocumentos usuario)
-                                    (getlistaacceso usuario))
+                                    (getestado usuario))
                            )
   )
 (define setListaDocumentos (lambda (usuario lista)
@@ -72,17 +73,17 @@
                                     (getContrasenia usuario)
                                     (getfecha usuario)
                                     lista
-                                    (getlistaacceso usuario)
+                                    (getestado usuario)
                                     )
                            )
   )
 
-(define setAcceso (lambda (usuario acceso)
+(define setEstado (lambda (usuario estado)
                            (list (getNombreusuario usuario)
                                     (getContrasenia usuario)
                                     (getfecha usuario)
                                     (getListaDocumentos usuario)
-                                     acceso
+                                     estado
                                     )
                            )
   )
