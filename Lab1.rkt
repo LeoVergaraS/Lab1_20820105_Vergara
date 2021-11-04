@@ -5,8 +5,6 @@
 (require "TDAusuario.rkt")
 (require "TDAacceso.rkt")
 
-(define DuckDocsVacio(paradigmadocs "DuckDocs" (fecha 1 11 2021) "Fe" "Fd"))
-
 ; Register
 (define equalUser?(lambda (listaUsuario usuario)
                           (if (null? listaUsuario)
@@ -44,9 +42,7 @@
   )
 
 
-(define gDocs1
-(register (register (register DuckDocsVacio (fecha 25 10 2021) "user1" "pass1") (fecha 25 10 2021) "user2"
-"pass2") (fecha 25 10 2021) "user3" "pass3"))
+
 
 
 ; login
@@ -121,7 +117,7 @@
                               ; caso verdadero
                               (cons (documento autor fecha nombre contenido) null)
                               ; caso falso
-                              (agregarDocumento (cdr lista) autor fecha nombre contenido)
+                              (cons (car lista) (agregarDocumento (cdr lista) autor fecha nombre contenido))
                               )
                           )
   )
@@ -142,28 +138,83 @@
 
 
 (define create(lambda (paradigmadocs)(lambda(fecha nombre contenido)
+                                       ; verifico si hay un usuario conectado.
                                        (if (conectado? (getListaUsuario paradigmadocs))
-                                           ; caso verdadero
-                                           (setListaUsuario paradigmadocs
-                                                            (agregaLista (getListaUsuario paradigmadocs)
-                                                                         (setEstado (setListaDocumentos(buscarConectado(getListaUsuario paradigmadocs))
-                                                                           (agregarDocumento(getListaDocumentos
-                                                                                             (buscarConectado
-                                                                                              (getListaUsuario paradigmadocs)))
-                                                                                            (getNombreusuario
-                                                                                             (buscarConectado
-                                                                                              (getListaUsuario paradigmadocs)))
-                                                                                            fecha
-                                                                                            nombre
-                                                                                            contenido)
-                                                              ) "Desconectado")
+                                           ; caso verdadero, actualizo la lista de usuario.
+                                           (setListaUsuario
+                                            ; Le paso paradigmadocs
+                                            paradigmadocs
+                                            ; y la lista actualizada. Para ello se agrega
+                                            ; el usuario actualizado a la lista.
+                                            (agregaLista
+                                             ; Le paso la lista de usuarios.
+                                             (getListaUsuario paradigmadocs)
+                                             ; y el usuario actualizado. Para actualizar al usuario,
+                                             ; primero se agrega el documento y luego se actualiza
+                                             ; el estado del usuario.
+                                             (setEstado
+                                              ; Para el estado, le paso al usuario con la lista documento actualizada.
+                                              (setListaDocumentos
+                                               ; para la lista de documento, le paso el usuario.
+                                               (buscarConectado(getListaUsuario paradigmadocs))
+                                               ; y le paso la lista de documentos actualizada.
+                                               (agregarDocumento
+                                                ; para ello se agrega el nuevo documento a la lista de documento de ese usuario.
+                                                ; Le paso la lista de documentos del usuario.
+                                                (getListaDocumentos(buscarConectado(getListaUsuario paradigmadocs)))
+                                                ; el nombre del usuario (autor)
+                                                (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs)))
+                                                ; la fecha de creacion.
+                                                fecha
+                                                ; el nombre del archivo
+                                                nombre
+                                                ; y el conetnido
+                                                ((getFE paradigmadocs) contenido)))
+                                              ; y el nuevo estado.
+                                              "Desconectado")
                                                         ))
-                                           ; caso falso
+                                           ; caso falso, no altero la plataforma.
                                            paradigmadocs
                                            )
                                        )
                 )
   )
 
+; funcion encriptado y desencriptado.
+(define cambiarLetras(lambda (lista)
+                       (if (null? lista)
+                           ; caso verdadero
+                           null
+                           ; caso falso
+                           (cond
+                             [(equal? #\a (car lista))(cons #\ψ (cambiarLetras (cdr lista)))]
+                             [(equal? #\e (car lista))(cons #\ω (cambiarLetras (cdr lista)))]
+                             [(equal? #\i (car lista))(cons #\ζ (cambiarLetras (cdr lista)))]
+                             [(equal? #\o (car lista))(cons #\ξ (cambiarLetras (cdr lista)))]
+                             [(equal? #\u (car lista))(cons #\ρ (cambiarLetras (cdr lista)))]
+                             [(equal? #\ψ (car lista))(cons #\a (cambiarLetras (cdr lista)))]
+                             [(equal? #\ω (car lista))(cons #\e (cambiarLetras (cdr lista)))]
+                             [(equal? #\ζ (car lista))(cons #\i (cambiarLetras (cdr lista)))]
+                             [(equal? #\ξ (car lista))(cons #\o (cambiarLetras (cdr lista)))]
+                             [(equal? #\ρ (car lista))(cons #\u (cambiarLetras (cdr lista)))]
+                             [else (cons (car lista) (cambiarLetras (cdr lista)))])
+                           )
+                       )
+  )
+
+(define encryptFunction (lambda (contenido)
+                          (list->string(cambiarLetras (string->list contenido)))
+                          )
+  )
+
+(define DecryptFunction (lambda (contenido)
+                          (list->string(cambiarLetras (string->list contenido)))
+                          )
+  )
+
+(define DuckDocsVacio(paradigmadocs "DuckDocs" (fecha 1 11 2021) encryptFunction DecryptFunction))
+(define gDocs1
+(register (register (register DuckDocsVacio (fecha 25 10 2021) "user1" "pass1") (fecha 25 10 2021) "user2"
+"pass2") (fecha 25 10 2021) "user3" "pass3"))
 (define gDocs3 ((login gDocs1 "user2" "pass2" create) (fecha 30 08 2021) "doc0" "contenido doc0"))
-(define gDocs4 ((login gDocs3 "user1" "pass1" create) (fecha 30 08 2021) "doc1" "contenido doc1"))
+(define gDocs4 ((login gDocs3 "user2" "pass2" create) (fecha 30 08 2021) "doc1" "contenido doc1"))
