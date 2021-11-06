@@ -2,12 +2,11 @@
 (provide (all-defined-out))
 (require "TDAfecha.rkt")
 ; tda acceso, contructor
-(define acceso(lambda (id fechaini fechafin)
-                (if (and (fecha? fechaini)
-                         (fecha? fechafin)
-                         (integer? id))
+(define acceso(lambda (usuario permiso)
+                (if (and (string? usuario)
+                         (char? permiso))
                     ; caso verdadero
-                    (list id fechaini fechafin)
+                    (list usuario permiso)
                     ; caso falso
                     null
                     )
@@ -16,27 +15,19 @@
   
 ; pertenencia
 (define acceso? (lambda (acceso)
-                  (and (integer? (car acceso))
-                       (fecha? (cadr acceso))
-                       (fecha? (caddr acceso)
-                               )
-                       )
-                  )
+                  (and   (string? (car acceso))
+                         (char? (cadr acceso)))
+                  ) 
   )
  
 
 ; selectores
-(define getid (lambda (acceso)
+(define getUsuario (lambda (acceso)
                 (car acceso)
                 )
   )
-(define getfechaini(lambda (acceso)
+(define getPermiso(lambda (acceso)
                      (cadr acceso)
-                     )
-  )
-
-(define getfechafin(lambda (acceso)
-                     (caddr acceso)
                      )
   )
 

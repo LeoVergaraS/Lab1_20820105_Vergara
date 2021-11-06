@@ -10,7 +10,7 @@
                             (string? contenido)
                             )
                        ; caso verdadero
-                       (list autor fecha nombredocumento contenido)
+                       (list autor fecha nombredocumento contenido (list null))
                        ; caso falso
                        null
                        )
@@ -47,6 +47,10 @@
                        (cadddr documento)
                        )
   )
+(define getListaPermiso (lambda (documento)
+                       (cadddr(cdr documento))
+                       )
+  )
 
 ; modificadores
 (define setNombreDocumento(lambda (documento nombredocumento)
@@ -54,6 +58,17 @@
                                        (getFechaCreacion documento)
                                         nombredocumento
                                        (getContenido documento)
+                                       (getListaPermiso documento)
+                                       )
+                            )
+  )
+
+(define setListaPermiso(lambda (documento listaPermisos)
+                            (documento (getAutor documento)
+                                       (getFechaCreacion documento)
+                                       (getNombreDocumento documento)
+                                       (getContenido documento)
+                                       listaPermisos
                                        )
                             )
   )

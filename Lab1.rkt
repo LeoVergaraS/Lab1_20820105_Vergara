@@ -180,6 +180,38 @@
                 )
   )
 
+; share
+(define actualizarListaAcceso(lambda (lista accesses)
+                               (if (null? lista)
+                                   ; caso verdadero
+                                   (if (null? accesses)
+                                       ; caso verdadero
+                                       null
+                                       ; caso falso
+                                       (cons (acceso (caar accesses) (cadar accesses)) (actualizarListaAcceso null (cdr accesses)))
+                                       )
+                                   ; caso falso
+                                   (cons (car lista) (actualizarListaAcceso (cdr lista) accesses))
+                                   )
+                               )
+  )
+
+(define share(lambda(paradigmadocs)(lambda(idDoc acceso . accesses)
+               (if (conectado? (getListaUsuario paradigmadocs))
+                   ; caso verdadero
+                   (if (>= (length (getListaDocumentos(buscarConectado(getListaUsuario paradigmadocs)))) idDoc)
+                       ; caso verdadero
+                       paradigmadocs
+                       ; caso falso
+                       paradigmadocs
+                       )
+                   ; caso falso
+                   paradigmadocs
+                                           )
+                                     )
+               )
+  )
+
 ; funcion encriptado y desencriptado.
 (define cambiarLetras(lambda (lista)
                        (if (null? lista)
@@ -216,5 +248,12 @@
 (define gDocs1
 (register (register (register DuckDocsVacio (fecha 25 10 2021) "user1" "pass1") (fecha 25 10 2021) "user2"
 "pass2") (fecha 25 10 2021) "user3" "pass3"))
+
+
+
 (define gDocs3 ((login gDocs1 "user2" "pass2" create) (fecha 30 08 2021) "doc0" "contenido doc0"))
 (define gDocs4 ((login gDocs3 "user2" "pass2" create) (fecha 30 08 2021) "doc1" "contenido doc1"))
+
+(define gDocs5  ((login gDocs4 "user2" "pass2" share) 2 (acceso "user1" #\r)))
+
+
