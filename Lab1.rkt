@@ -1,4 +1,5 @@
 #lang racket
+
 (require "TDAfecha.rkt")
 (require "TDAparadigmadocs.rkt")
 (require "TDAdocumento.rkt")
@@ -181,35 +182,86 @@
   )
 
 ; share
-(define actualizarListaAcceso(lambda (lista accesses)
+(define tienePermiso? (lambda (listaPermiso usuario)
+                        (if (null? listaPermiso)
+                            ; caso verdadero
+                            #f
+                            ; caso falso
+                            (if (equal? (getUsuario (car listaPermiso)) usuario)
+                                ; caso verdadero
+                                #t
+                                ; caso falso
+                                (tienePermiso? (cdr listaPermiso) usuario)
+                                )
+                            )
+                        )
+  )
+
+(define agregarListaPermiso(lambda (listaPermiso accesses aux)
+                             (if (null? accesses)
+                                 ; caso verdadero
+                                 (if (null? listaPermiso)
+                                     ; caso verdadero
+                                     aux
+                                     ; caso falso
+                                     (if (tienePermiso? aux (getUsuario (car listaPermiso)))
+                                         ; caso verdadero
+                                         (agregarListaPermiso (cdr listaPermiso) null aux)
+                                         ; caso falso
+                                         (agregarListaPermiso (cdr listaPermiso) null (cons (car listaPermiso) aux))
+                                         )
+                                     )
+                                 ; caso falso
+                                 (agregarListaPermiso listaPermiso (cdr accesses) (cons (car accesses) aux))
+                                 )
+                             )
+  )
+
+(define actualizarListaDocumentos(lambda (lista documento)
                                (if (null? lista)
                                    ; caso verdadero
-                                   (if (null? accesses)
-                                       ; caso verdadero
-                                       null
-                                       ; caso falso
-                                       (cons (acceso (caar accesses) (cadar accesses)) (actualizarListaAcceso null (cdr accesses)))
-                                       )
+                                   null
                                    ; caso falso
-                                   (cons (car lista) (actualizarListaAcceso (cdr lista) accesses))
+                                   (if (equal? (getNombreDocumento documento) (getNombreDocumento (car lista)))
+                                       ; caso verdadero
+                                       (cons documento (actualizarListaDocumentos (cdr lista) documento))
+                                       ; caso falso
+                                       (cons (car lista) (actualizarListaDocumentos (cdr lista) documento))
+                                       )
                                    )
                                )
   )
 
-(define share(lambda(paradigmadocs)(lambda(idDoc acceso . accesses)
+(define share(lambda(paradigmadocs)(lambda(idDoc . accesses)
                (if (conectado? (getListaUsuario paradigmadocs))
                    ; caso verdadero
                    (if (>= (length (getListaDocumentos(buscarConectado(getListaUsuario paradigmadocs)))) idDoc)
                        ; caso verdadero
-                       paradigmadocs
+                       (setListaUsuario paradigmadocs (agregaLista (getListaUsuario paradigmadocs)
+                       (setEstado (setListaDocumentos (buscarConectado(getListaUsuario paradigmadocs))
+                       (actualizarListaDocumentos
+                        (getListaDocumentos(buscarConectado(getListaUsuario paradigmadocs))) 
+                        (setListaPermiso (list-ref(getListaDocumentos(buscarConectado(getListaUsuario paradigmadocs))) (- idDoc 1))
+                                         (agregarListaPermiso (getListaPermiso(list-ref(getListaDocumentos(buscarConectado(getListaUsuario paradigmadocs))) (- idDoc 1))) accesses null)))) "Desconetado")))
                        ; caso falso
-                       paradigmadocs
+                       (setListaUsuario paradigmadocs(agregaLista (getListaUsuario paradigmadocs) (setEstado (buscarConectado(getListaUsuario paradigmadocs)) "Desconectado")))
                        )
                    ; caso falso
                    paradigmadocs
                                            )
                                      )
                )
+  )
+
+; funcion revokeAllAccesses
+(define revokeAllAccesses(lambda (paradigmadocs)
+                           (if (conectado? (getListaUsuario paradigmadocs))
+                               ; caso verdadero
+                               (buscarConectado (getListaUsuario paradigmadocs))
+                               ; caso falso
+                               paradigmadocs
+                               )
+                           )
   )
 
 ; funcion encriptado y desencriptado.
@@ -254,6 +306,6 @@
 (define gDocs3 ((login gDocs1 "user2" "pass2" create) (fecha 30 08 2021) "doc0" "contenido doc0"))
 (define gDocs4 ((login gDocs3 "user2" "pass2" create) (fecha 30 08 2021) "doc1" "contenido doc1"))
 
-(define gDocs5  ((login gDocs4 "user2" "pass2" share) 2 (acceso "user1" #\r)))
-
-
+(define gDocs5  ((login gDocs4 "user2" "pass2" share) 2 (acceso "user1" #\r) (acceso "user3" #\r) (acceso "user4" #\r)))
+(define gDocs6  ((login gDocs5 "user2" "pass2" share) 1 (acceso "user1" #\c)))
+(define gDocs7 (login gDocs6 "user2" "pass2" revokeAllAccesses))

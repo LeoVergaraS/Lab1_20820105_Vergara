@@ -11,7 +11,7 @@
                            (procedure? funcionDesencriptado)
                            )
                       ; Caso verdadero
-                      (list nombre fechacreacion funcionEncriptado funcionDesencriptado (list (usuario "admin" "adminpass" (fecha  1 11 2021))))
+                      (list nombre fechacreacion funcionEncriptado funcionDesencriptado (list))
                       ; Caso Falso
                       null
                       )

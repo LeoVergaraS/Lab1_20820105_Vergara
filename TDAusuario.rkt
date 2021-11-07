@@ -11,7 +11,7 @@
                            (fecha? fecharegistro)
                            )
                       ; caso verdadero
-                      (list nombreusuario contrasenia fecharegistro (list (documento "" (fecha 0 0 0) "" "")) "Desconectado")
+                      (list nombreusuario contrasenia fecharegistro (list) "Desconectado")
                       ; caso falso
                       null
                       )
