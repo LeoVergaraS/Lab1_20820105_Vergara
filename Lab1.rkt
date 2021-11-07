@@ -253,16 +253,38 @@
                )
   )
 
+; add
+; restoreVersion
 ; funcion revokeAllAccesses
 (define revokeAllAccesses(lambda (paradigmadocs)
                            (if (conectado? (getListaUsuario paradigmadocs))
                                ; caso verdadero
-                               (buscarConectado (getListaUsuario paradigmadocs))
+                               (setListaUsuario
+                                paradigmadocs
+                                (agregaLista
+                                 (getListaUsuario paradigmadocs)
+                                 (setEstado
+                                  (setListaDocumentos
+                                   (buscarConectado
+                                    (getListaUsuario paradigmadocs))
+                                   (map
+                                    (lambda(documento)(setListaPermiso documento null))
+                                    (getListaDocumentos(buscarConectado (getListaUsuario paradigmadocs)))))
+                                  "Desconectado")))
                                ; caso falso
                                paradigmadocs
                                )
                            )
   )
+
+; search
+; paradigmadocs->string
+; delete
+; searchAndReplace
+; applyStyles
+; comment
+; ctrlZ y ctrlY
+
 
 ; funcion encriptado y desencriptado.
 (define cambiarLetras(lambda (lista)
