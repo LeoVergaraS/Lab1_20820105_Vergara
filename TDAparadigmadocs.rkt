@@ -11,7 +11,7 @@
                            (procedure? funcionDesencriptado)
                            )
                       ; Caso verdadero
-                      (list nombre fechacreacion funcionEncriptado funcionDesencriptado (list))
+                      (list nombre fechacreacion funcionEncriptado funcionDesencriptado (list) (list))
                       ; Caso Falso
                       null
                       )
@@ -50,6 +50,10 @@
                          (cadddr(cdr lista))
                          )
   )
+(define getListaDocumentos(lambda(lista)
+                         (cadddr(cdr(cdr lista)))
+                         )
+  )
 
 ; modificadores
 (define setListaUsuario(lambda (DuckDocs lista)
@@ -57,6 +61,18 @@
                                         (getFecha DuckDocs)
                                         (getFE DuckDocs)
                                         (getFD DuckDocs)
+                                        lista
+                                        (getListaDocumentos DuckDocs)
+                                        )
+                         )
+  )
+
+(define setListaDocumentos(lambda (DuckDocs lista)
+                         (list (getNombre DuckDocs)
+                                        (getFecha DuckDocs)
+                                        (getFE DuckDocs)
+                                        (getFD DuckDocs)
+                                        (getListaUsuario DuckDocs)
                                         lista
                                         )
                          )

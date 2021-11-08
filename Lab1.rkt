@@ -135,7 +135,7 @@
                             (cons (car lista) (agregaLista (cdr lista) usuario))
                          )
                      )
-  ))
+  )) 
 
 
 (define create(lambda (paradigmadocs)(lambda(fecha nombre contenido)
@@ -143,41 +143,24 @@
                                        (if (conectado? (getListaUsuario paradigmadocs))
                                            ; caso verdadero, actualizo la lista de usuario.
                                            (setListaUsuario
-                                            ; Le paso paradigmadocs
-                                            paradigmadocs
-                                            ; y la lista actualizada. Para ello se agrega
-                                            ; el usuario actualizado a la lista.
+                                            (setListaDocumentos
+                                             paradigmadocs
+                                            (agregarDocumento
+                                             (getListaDocumentos paradigmadocs)
+                                             (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs)))
+                                             fecha
+                                             nombre
+                                             ((getFE paradigmadocs) contenido)))
                                             (agregaLista
-                                             ; Le paso la lista de usuarios.
                                              (getListaUsuario paradigmadocs)
-                                             ; y el usuario actualizado. Para actualizar al usuario,
-                                             ; primero se agrega el documento y luego se actualiza
-                                             ; el estado del usuario.
                                              (setEstado
-                                              ; Para el estado, le paso al usuario con la lista documento actualizada.
-                                              (setListaDocumentos
-                                               ; para la lista de documento, le paso el usuario.
-                                               (buscarConectado(getListaUsuario paradigmadocs))
-                                               ; y le paso la lista de documentos actualizada.
-                                               (agregarDocumento
-                                                ; para ello se agrega el nuevo documento a la lista de documento de ese usuario.
-                                                ; Le paso la lista de documentos del usuario.
-                                                (getListaDocumentos(buscarConectado(getListaUsuario paradigmadocs)))
-                                                ; el nombre del usuario (autor)
-                                                (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs)))
-                                                ; la fecha de creacion.
-                                                fecha
-                                                ; el nombre del archivo
-                                                nombre
-                                                ; y el conetnido
-                                                ((getFE paradigmadocs) contenido)))
-                                              ; y el nuevo estado.
-                                              "Desconectado")
-                                                        ))
+                                              (buscarConectado(getListaUsuario paradigmadocs))
+                                              "Desconectado")))
                                            ; caso falso, no altero la plataforma.
                                            paradigmadocs
                                            )
                                        )
+                
                 )
   )
 
@@ -222,7 +205,8 @@
                                    ; caso verdadero
                                    null
                                    ; caso falso
-                                   (if (equal? (getNombreDocumento documento) (getNombreDocumento (car lista)))
+                                   (if (and(equal? (getNombreDocumento documento) (getNombreDocumento (car lista)))
+                                           (equal? (getAutor documento) (getAutor (car lista))))
                                        ; caso verdadero
                                        (cons documento (actualizarListaDocumentos (cdr lista) documento))
                                        ; caso falso
@@ -232,19 +216,46 @@
                                )
   )
 
+(define contarDocumentos(lambda (listaDocumentos usuario i)
+                          (if (null? listaDocumentos)
+                              ; caso verdadero
+                              i
+                              ; caso falso
+                              (if (equal? (getAutor(car listaDocumentos)) usuario)
+                                  ; caso verdadero
+                                  (contarDocumentos (cdr listaDocumentos) usuario (+ i 1))
+                                  ; caso falso
+                                  (contarDocumentos (cdr listaDocumentos) usuario i)
+                                  )
+                              )
+                          )
+  )
+
+
 (define share(lambda(paradigmadocs)(lambda(idDoc . accesses)
                (if (conectado? (getListaUsuario paradigmadocs))
                    ; caso verdadero
-                   (if (>= (length (getListaDocumentos(buscarConectado(getListaUsuario paradigmadocs)))) idDoc)
+                   (if (>= (contarDocumentos (getListaDocumentos paradigmadocs) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs))) 0) idDoc)
                        ; caso verdadero
-                       (setListaUsuario paradigmadocs (agregaLista (getListaUsuario paradigmadocs)
-                       (setEstado (setListaDocumentos (buscarConectado(getListaUsuario paradigmadocs))
-                       (actualizarListaDocumentos
-                        (getListaDocumentos(buscarConectado(getListaUsuario paradigmadocs))) 
-                        (setListaPermiso (list-ref(getListaDocumentos(buscarConectado(getListaUsuario paradigmadocs))) (- idDoc 1))
-                                         (agregarListaPermiso (getListaPermiso(list-ref(getListaDocumentos(buscarConectado(getListaUsuario paradigmadocs))) (- idDoc 1))) accesses null)))) "Desconetado")))
+                       (setListaUsuario
+                        (setListaDocumentos
+                         paradigmadocs
+                         (actualizarListaDocumentos
+                          (getListaDocumentos paradigmadocs)
+                          (setListaPermiso
+                           (list-ref (filter (lambda(documento)(equal? (getAutor documento) (getNombreusuario(buscarConectado (getListaUsuario paradigmadocs)))))(getListaDocumentos paradigmadocs))(- idDoc 1))
+                           (agregarListaPermiso
+                            (getListaPermiso
+                             (list-ref (filter (lambda(documento)(equal? (getAutor documento) (getNombreusuario(buscarConectado (getListaUsuario paradigmadocs)))))(getListaDocumentos paradigmadocs))(- idDoc 1)))
+                             accesses
+                             null))))
+                        (agregaLista
+                         (getListaUsuario paradigmadocs)
+                         (setEstado
+                          (buscarConectado(getListaUsuario paradigmadocs))
+                          "Desconectado")))
                        ; caso falso
-                       (setListaUsuario paradigmadocs(agregaLista (getListaUsuario paradigmadocs) (setEstado (buscarConectado(getListaUsuario paradigmadocs)) "Desconectado")))
+                       (setListaUsuario paradigmadocs (agregaLista (getListaUsuario paradigmadocs) (setEstado (buscarConectado(getListaUsuario paradigmadocs)) "Desconectado")))
                        )
                    ; caso falso
                    paradigmadocs
@@ -253,24 +264,39 @@
                )
   )
 
+
 ; add
 ; restoreVersion
 ; funcion revokeAllAccesses
+(define sacarPermisos (lambda (documento usuario)
+                        (if (equal? (getAutor documento) usuario)
+                            ; caso verdadero
+                            (setListaPermiso documento null)
+                            ; caso falso
+                            documento)
+                        )
+  )
+
 (define revokeAllAccesses(lambda (paradigmadocs)
                            (if (conectado? (getListaUsuario paradigmadocs))
                                ; caso verdadero
-                               (setListaUsuario
-                                paradigmadocs
-                                (agregaLista
-                                 (getListaUsuario paradigmadocs)
-                                 (setEstado
-                                  (setListaDocumentos
-                                   (buscarConectado
-                                    (getListaUsuario paradigmadocs))
-                                   (map
-                                    (lambda(documento)(setListaPermiso documento null))
-                                    (getListaDocumentos(buscarConectado (getListaUsuario paradigmadocs)))))
-                                  "Desconectado")))
+                               (if (not(null? (filter (lambda(documento)(equal? (getAutor documento) (getNombreusuario(buscarConectado (getListaUsuario paradigmadocs)))))(getListaDocumentos paradigmadocs))))
+                                   ; caso verdadero
+                                      (setListaDocumentos
+                                        paradigmadocs
+                                       (map
+                                        (lambda(documento)(sacarPermisos documento (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs)))))
+                                        (getListaDocumentos paradigmadocs)))
+                                   ; caso falso
+                                   (setListaUsuario
+                                    paradigmadocs
+                                    (agregaLista
+                                     (getListaUsuario paradigmadocs)
+                                     (setEstado
+                                      (buscarConectado(getListaUsuario paradigmadocs))
+                                      "Desconectado")))
+                                   )
+                               
                                ; caso falso
                                paradigmadocs
                                )
@@ -279,6 +305,8 @@
 
 ; search
 ; paradigmadocs->string
+
+; (opcionales)
 ; delete
 ; searchAndReplace
 ; applyStyles
@@ -324,10 +352,17 @@
 "pass2") (fecha 25 10 2021) "user3" "pass3"))
 
 
-
-(define gDocs3 ((login gDocs1 "user2" "pass2" create) (fecha 30 08 2021) "doc0" "contenido doc0"))
+(define gDocs2 ((login gDocs1 "user1" "pass1" create) (fecha 30 08 2021) "doc3" "contenido doc3"))
+(define gDocs3 ((login gDocs2 "user2" "pass2" create) (fecha 30 08 2021) "doc0" "contenido doc0"))
 (define gDocs4 ((login gDocs3 "user2" "pass2" create) (fecha 30 08 2021) "doc1" "contenido doc1"))
+(define gDocs5 ((login gDocs4 "user1" "pass1" create) (fecha 30 08 2021) "doc0" "contenido doc0"))
+(define gDocs6 ((login gDocs5 "user2" "pass2" create) (fecha 30 08 2021) "doc5" "contenido doc5"))
+(define gDocs7 ((login gDocs6 "user3" "pass3" create) (fecha 30 08 2021) "doc1" "contenido doc1"))
+(define gDocs8 ((login gDocs7 "user2" "pass2" create) (fecha 30 08 2021) "doc10" "contenido doc10"))
+(define gDocs9 ((login gDocs8 "user3" "pass3" create) (fecha 30 08 2021) "doc2" "contenido doc2"))
 
-(define gDocs5  ((login gDocs4 "user2" "pass2" share) 2 (acceso "user1" #\r) (acceso "user3" #\r) (acceso "user4" #\r)))
-(define gDocs6  ((login gDocs5 "user2" "pass2" share) 1 (acceso "user1" #\c)))
-(define gDocs7 (login gDocs6 "user2" "pass2" revokeAllAccesses))
+
+(define gDocs10  ((login gDocs9 "user2" "pass2" share) 4 (acceso "user1" #\r) (acceso "user3" #\r) (acceso "user4" #\r)))
+
+(define gDocs11 ((login gDocs10 "user2" "pass2" share) 2 (acceso "user1" #\c)))
+(define gDocs12 (login gDocs11 "user2" "pass2" revokeAllAccesses))

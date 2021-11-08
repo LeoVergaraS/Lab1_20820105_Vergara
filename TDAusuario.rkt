@@ -11,7 +11,7 @@
                            (fecha? fecharegistro)
                            )
                       ; caso verdadero
-                      (list nombreusuario contrasenia fecharegistro (list) "Desconectado")
+                      (list nombreusuario contrasenia fecharegistro "Desconectado")
                       ; caso falso
                       null
                       )
@@ -42,12 +42,8 @@
                          )
   )
 
-(define getListaDocumentos (lambda (usuario)
-                             (cadddr usuario)
-                             )
-  )
 (define getestado(lambda (usuario)
-                             (cadddr (cdr usuario))
+                             (cadddr usuario)
                              )
   )
 
@@ -56,7 +52,6 @@
                            (list  nombreusuario
                                     (getContrasenia usuario)
                                     (getfecha usuario)
-                                    (getListaDocumentos usuario)
                                     (getestado usuario))
                            )
   )
@@ -64,17 +59,7 @@
                            (list (getNombreusuario usuario)
                                      contrasenia
                                     (getfecha usuario)
-                                    (getListaDocumentos usuario)
                                     (getestado usuario))
-                           )
-  )
-(define setListaDocumentos (lambda (usuario lista)
-                           (list (getNombreusuario usuario)
-                                    (getContrasenia usuario)
-                                    (getfecha usuario)
-                                    lista
-                                    (getestado usuario)
-                                    )
                            )
   )
 
@@ -82,7 +67,6 @@
                            (list (getNombreusuario usuario)
                                     (getContrasenia usuario)
                                     (getfecha usuario)
-                                    (getListaDocumentos usuario)
                                      estado
                                     )
                            )
