@@ -30,7 +30,7 @@
                (car historial)
                )
   )
-(define getVersionContenido(lambda(historial)
+(define getContenidoVersion(lambda(historial)
                (cadr historial)
                )
   )

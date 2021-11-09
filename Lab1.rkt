@@ -311,6 +311,36 @@
              )
   )
 ; restoreVersion
+(define restoreVersion(lambda (paradigmadocs)(lambda(idDoc idVersion)
+                                               (if (conectado? (getListaUsuario paradigmadocs))
+                                                   ; caso verdadero
+                                                   (if (equal? (getAutor(list-ref(getListaDocumentos paradigmadocs) (- idDoc 1))) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs))))
+                                                       ; caso verdadero
+                                                       (setListaUsuario
+                                                        (setListaDocumentos
+                                                         paradigmadocs
+                                                         (actualizarListaDocumentos
+                                                          (getListaDocumentos paradigmadocs)
+                                                          (setContenido
+                                                           (setListaHistorial
+                                                            (list-ref(getListaDocumentos paradigmadocs) (- idDoc 1))
+                                                            (agregarListaHistorial
+                                                             (getListaHistorial(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1)))
+                                                             0
+                                                             (getContenido(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1)))
+                                                             (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs)))
+                                                             (getFechaModificacion(list-ref(getListaHistorial(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1))) idVersion))))
+                                                            (getContenidoVersion(list-ref(getListaHistorial(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1))) idVersion)))))
+                                                        (agregaLista (getListaUsuario paradigmadocs) (setEstado (buscarConectado(getListaUsuario paradigmadocs)) "Desconectado")))
+                                                       ; caso falso
+                                                       (setListaUsuario paradigmadocs (agregaLista (getListaUsuario paradigmadocs) (setEstado (buscarConectado(getListaUsuario paradigmadocs)) "Desconectado")))
+                                                       )
+                                                   ; caso falso
+                                                   paradigmadocs
+                                                   )
+                                               )
+                        )
+  )
 ; funcion revokeAllAccesses
 (define sacarPermisos (lambda (documento usuario)
                         (if (equal? (getAutor documento) usuario)
@@ -415,4 +445,5 @@
 (define gDocs11 ((login gDocs10 "user2" "pass2" share) 2 (acceso "user1" #\w)))
 (define gDocs12 ((login gDocs11 "user1" "pass1" add) 3 (fecha 8 11 2021) "mas contenido para el texto"))
 (define gDocs13 ((login gDocs12 "user1" "pass1" add) 3 (fecha 9 11 2021) "aun mas contenido"))
+(define gDocs14 ((login gDocs13 "user2" "pass2" restoreVersion) 3 1))
 ;(define gDocs12 (login gDocs11 "user2" "pass2" revokeAllAccesses))
