@@ -68,6 +68,16 @@
                             )
   )
 
+(define setContenido(lambda(documento contenido)
+                      (list (getAutor documento)
+                                       (getFechaCreacion documento)
+                                       (getNombreDocumento documento)
+                                       contenido
+                                       (getListaPermiso documento)
+                                       (getListaHistorial documento))
+                      )
+  )
+
 (define setListaPermiso(lambda (documento listaPermisos)
                             (list (getAutor documento)
                                        (getFechaCreacion documento)

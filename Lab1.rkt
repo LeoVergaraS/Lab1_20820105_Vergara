@@ -288,7 +288,7 @@
                                    ; caso verdadero
                                    (cons (historial i contenido usuario fecha) null)
                                    ; caso falso
-                                   (agregarListaHistorial (cdr listaHistorial) (+ i 1) contenido usuario fecha)
+                                   (cons (car listaHistorial)(agregarListaHistorial (cdr listaHistorial) (+ i 1) contenido usuario fecha))
                                    )
                                )
   )
@@ -299,7 +299,7 @@
                                         (if (or (equal? (getAutor(list-ref(getListaDocumentos paradigmadocs) (- idDoc 1))) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs))))
                                                 (tienePermisoEscritura? (getListaPermiso (list-ref(getListaDocumentos paradigmadocs) (- idDoc 1))) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs)))))
                                             ; caso verdadero
-                                            (agregarListaHistorial (getListaHistorial(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1))) 0 (getContenido(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1))) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs))) fecha)
+                                            (setListaUsuario (setListaDocumentos paradigmadocs (actualizarListaDocumentos (getListaDocumentos paradigmadocs)(setContenido (setListaHistorial (list-ref(getListaDocumentos paradigmadocs) (- idDoc 1)) (agregarListaHistorial (getListaHistorial(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1))) 0 (getContenido(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1))) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs))) fecha))(string-append (getContenido(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1))) " " ((getFE paradigmadocs) contenidoTexto))))) (agregaLista (getListaUsuario paradigmadocs) (setEstado (buscarConectado(getListaUsuario paradigmadocs)) "Desconectado")))
                                             
                                             ; caso falso
                                             (setListaUsuario paradigmadocs (agregaLista (getListaUsuario paradigmadocs) (setEstado (buscarConectado(getListaUsuario paradigmadocs)) "Desconectado")))
@@ -414,4 +414,5 @@
 
 (define gDocs11 ((login gDocs10 "user2" "pass2" share) 2 (acceso "user1" #\w)))
 (define gDocs12 ((login gDocs11 "user1" "pass1" add) 3 (fecha 8 11 2021) "mas contenido para el texto"))
+(define gDocs13 ((login gDocs12 "user1" "pass1" add) 3 (fecha 9 11 2021) "aun mas contenido"))
 ;(define gDocs12 (login gDocs11 "user2" "pass2" revokeAllAccesses))
