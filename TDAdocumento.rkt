@@ -10,7 +10,7 @@
                             (string? contenido)
                             )
                        ; caso verdadero
-                       (list autor fecha nombredocumento contenido (list))
+                       (list autor fecha nombredocumento contenido (list) (list))
                        ; caso falso
                        null
                        )
@@ -51,6 +51,10 @@
                        (cadddr(cdr documento))
                        )
   )
+(define getListaHistorial (lambda (documento)
+                       (cadddr(cdr(cdr documento)))
+                       )
+  )
 
 ; modificadores
 (define setNombreDocumento(lambda (documento nombredocumento)
@@ -59,6 +63,7 @@
                                         nombredocumento
                                        (getContenido documento)
                                        (getListaPermiso documento)
+                                       (getListaHistorial documento)
                                        )
                             )
   )
@@ -69,6 +74,18 @@
                                        (getNombreDocumento documento)
                                        (getContenido documento)
                                        listaPermisos
+                                       (getListaHistorial documento)
+                                       )
+                            )
+  )
+
+(define setListaHistorial(lambda (documento listaHistorial)
+                            (list (getAutor documento)
+                                       (getFechaCreacion documento)
+                                       (getNombreDocumento documento)
+                                       (getContenido documento)
+                                       (getListaPermiso documento)
+                                       listaHistorial
                                        )
                             )
   )

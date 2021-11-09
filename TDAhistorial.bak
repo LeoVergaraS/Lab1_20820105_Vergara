@@ -1,0 +1,25 @@
+#lang racket
+(require "TDAfecha.rkt")
+
+; contructor TDA historial
+(define historial(lambda (id contenido usuario fecha)
+                   (if(and(integer? id)
+                          (string? contenido)
+                          (string? usuario)
+                          (fecha? fecha))
+                      ; caso verdadero
+                      (list id contenido usuario fecha)
+                      ; caso falso
+                      null
+                      )
+                   )
+  )
+
+; pertenencia
+(define historial? (lambda(historial)
+                     (and(intenger? (car historial))
+                         (string? (cadr historial))
+                         (string? (caddr historial))
+                         (fecha? (cadddr historial)))
+                     )
+  )

@@ -5,6 +5,7 @@
 (require "TDAdocumento.rkt")
 (require "TDAusuario.rkt")
 (require "TDAacceso.rkt")
+(require "TDAhistorial.rkt")
 
 ; Register
 (define equalUser?(lambda (listaUsuario usuario)
@@ -266,6 +267,49 @@
 
 
 ; add
+(define tienePermisoEscritura? (lambda(listaPermiso usuario)
+                                 (if (null? listaPermiso)
+                                     ; caso verdadero
+                                     #f
+                                     ; caso falso
+                                     (if (and(equal? (getUsuario (car listaPermiso)) usuario)
+                                             (equal? (getPermiso (car listaPermiso)) #\w))
+                                         ; caso verdadero
+                                         #t
+                                         ; caso falso
+                                         (tienePermisoEscritura? (cdr listaPermiso) usuario)
+                                         )
+                                     )
+                                 )
+  )
+
+(define agregarListaHistorial(lambda(listaHistorial i contenido usuario fecha)
+                               (if (null? listaHistorial)
+                                   ; caso verdadero
+                                   (cons (historial i contenido usuario fecha) null)
+                                   ; caso falso
+                                   (agregarListaHistorial (cdr listaHistorial) (+ i 1) contenido usuario fecha)
+                                   )
+                               )
+  )
+
+(define add(lambda (paradigmadocs)(lambda (idDoc fecha contenidoTexto)
+                                    (if (conectado? (getListaUsuario paradigmadocs))
+                                        ; caso verdadero
+                                        (if (or (equal? (getAutor(list-ref(getListaDocumentos paradigmadocs) (- idDoc 1))) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs))))
+                                                (tienePermisoEscritura? (getListaPermiso (list-ref(getListaDocumentos paradigmadocs) (- idDoc 1))) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs)))))
+                                            ; caso verdadero
+                                            (agregarListaHistorial (getListaHistorial(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1))) 0 (getContenido(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1))) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs))) fecha)
+                                            
+                                            ; caso falso
+                                            (setListaUsuario paradigmadocs (agregaLista (getListaUsuario paradigmadocs) (setEstado (buscarConectado(getListaUsuario paradigmadocs)) "Desconectado")))
+                                            )
+                                        ; caso falso
+                                        paradigmadocs
+                                        )
+                                    )
+             )
+  )
 ; restoreVersion
 ; funcion revokeAllAccesses
 (define sacarPermisos (lambda (documento usuario)
@@ -282,11 +326,15 @@
                                ; caso verdadero
                                (if (not(null? (filter (lambda(documento)(equal? (getAutor documento) (getNombreusuario(buscarConectado (getListaUsuario paradigmadocs)))))(getListaDocumentos paradigmadocs))))
                                    ; caso verdadero
-                                      (setListaDocumentos
+                                      (setListaUsuario (setListaDocumentos
                                         paradigmadocs
                                        (map
                                         (lambda(documento)(sacarPermisos documento (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs)))))
-                                        (getListaDocumentos paradigmadocs)))
+                                        (getListaDocumentos paradigmadocs))) (agregaLista
+                                     (getListaUsuario paradigmadocs)
+                                     (setEstado
+                                      (buscarConectado(getListaUsuario paradigmadocs))
+                                      "Desconectado")))
                                    ; caso falso
                                    (setListaUsuario
                                     paradigmadocs
@@ -364,5 +412,6 @@
 
 (define gDocs10  ((login gDocs9 "user2" "pass2" share) 4 (acceso "user1" #\r) (acceso "user3" #\r) (acceso "user4" #\r)))
 
-(define gDocs11 ((login gDocs10 "user2" "pass2" share) 2 (acceso "user1" #\c)))
-(define gDocs12 (login gDocs11 "user2" "pass2" revokeAllAccesses))
+(define gDocs11 ((login gDocs10 "user2" "pass2" share) 2 (acceso "user1" #\w)))
+(define gDocs12 ((login gDocs11 "user1" "pass1" add) 3 (fecha 8 11 2021) "mas contenido para el texto"))
+;(define gDocs12 (login gDocs11 "user2" "pass2" revokeAllAccesses))
