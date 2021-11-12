@@ -382,7 +382,80 @@
   )
 
 ; search
+(define tienePermisoLectura?(lambda(listaPermiso usuario)
+                              (if (null? listaPermiso)
+                                     ; caso verdadero
+                                     #f
+                                     ; caso falso
+                                     (if (and(equal? (getUsuario (car listaPermiso)) usuario)
+                                             (equal? (getPermiso (car listaPermiso)) #\r))
+                                         ; caso verdadero
+                                         #t
+                                         ; caso falso
+                                         (tienePermisoEscritura? (cdr listaPermiso) usuario)
+                                         )
+                                     )
+                              )
+  )
+(define search-substring-historial(lambda(historial substring funciondesencriptado)
+                          (if (null? historial)
+                              ; caso verdadero
+                              #f
+                              ; caso falso
+                              (if (string-contains? (funciondesencriptado (getContenidoVersion(car historial))) substring)
+                                  ; caso verdadero
+                                  #t
+                                  ; caso falso
+                                  (search-substring-historial (cdr historial) substring funciondesencriptado)
+                                  )
+                              )
+                          )
+  )
+
+(define filtroSearch(lambda (documento nombreusuario texto FD)
+                      (if(or(equal? (getAutor documento) nombreusuario)
+                         (tienePermisoEscritura? (getListaPermiso documento) nombreusuario)
+                         (tienePermisoLectura? (getListaPermiso documento) nombreusuario))
+                         ; caso verdadero
+                         (or(string-contains? (FD (getContenido documento)) texto)
+                            (search-substring-historial (getListaHistorial documento) texto FD))
+                         ; caso falso
+                         #f
+                         )
+                      )
+  )
+
+(define search(lambda(paradigmadocs)(lambda (texto)
+                                      (if (conectado? (getListaUsuario paradigmadocs))
+                                          ; caso verdadero
+                                          (filter (lambda(documento)(filtroSearch documento (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs))) texto (getFD paradigmadocs))) (getListaDocumentos paradigmadocs))
+                                          ; caso falso
+                                          null)
+                                      )
+                )
+  )
 ; paradigmadocs->string
+(define fecha->string(lambda(fecha)
+                       (string-append
+                        "La fecha de creacion es: "
+                        (number->string (getDia fecha))
+                        "-"
+                        (number->string (getMes fecha))
+                        "-"
+                        (number->string (getAnio fecha))
+                        )
+                       )
+  )
+
+(define paradigmadocs->string(lambda(paradigmadocs)
+                               (if (conectado? (getListaUsuario paradigmadocs))
+                                   ; caso verdadero
+                                   0
+                                   ; caso falso
+                                   "DUCKDOCS:\n Los documentos presente en la plataforma DuckDocs son."
+                                   )
+                               )
+  )
 
 ; (opcionales)
 ; delete
@@ -440,10 +513,10 @@
 (define gDocs9 ((login gDocs8 "user3" "pass3" create) (fecha 30 08 2021) "doc2" "contenido doc2"))
 
 
-(define gDocs10  ((login gDocs9 "user2" "pass2" share) 4 (acceso "user1" #\r) (acceso "user3" #\r) (acceso "user4" #\r)))
+(define gDocs10  ((login gDocs9 "user2" "pass2" share) 4 (acceso "user1" #\w) (acceso "user3" #\r) (acceso "user4" #\r)))
 
-(define gDocs11 ((login gDocs10 "user2" "pass2" share) 2 (acceso "user1" #\w)))
+(define gDocs11 ((login gDocs10 "user2" "pass2" share) 2 (acceso "user1" #\c)))
 (define gDocs12 ((login gDocs11 "user1" "pass1" add) 3 (fecha 8 11 2021) "mas contenido para el texto"))
 (define gDocs13 ((login gDocs12 "user1" "pass1" add) 3 (fecha 9 11 2021) "aun mas contenido"))
-(define gDocs14 ((login gDocs13 "user2" "pass2" restoreVersion) 3 1))
+(define gDocs14 ((login gDocs13 "user1" "pass1" search) "contenido"))
 ;(define gDocs12 (login gDocs11 "user2" "pass2" revokeAllAccesses))
