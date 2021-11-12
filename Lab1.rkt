@@ -435,9 +435,35 @@
                 )
   )
 ; paradigmadocs->string
+(define documento->string(lambda(documento FD)
+                           (string-append
+                            "Nombre del texto: "
+                            (getNombreDocumento documento)
+                            ". Autor: "
+                            (getAutor documento)
+                            ". Fecha de creacion: "
+                            (fecha->string(getFechaCreacion documento))
+                            ". Contenido:"
+                            "\""
+                            (FD (getContenido documento))
+                            "\""
+
+                            )
+                           )
+  )
+
+(define listaDocumento->string(lambda(lista string i FD)
+                                (if (null? lista)
+                                    ; caso verdadero
+                                    string
+                                    ; caso falso
+                                    (listaDocumento->string (cdr lista) (string-append string "  "(number->string i) ". " (documento->string (car lista) FD) "\n") (+ i 1) FD)
+                                    )
+                                )
+  )
+
 (define fecha->string(lambda(fecha)
                        (string-append
-                        "La fecha de creacion es: "
                         (number->string (getDia fecha))
                         "-"
                         (number->string (getMes fecha))
@@ -450,9 +476,27 @@
 (define paradigmadocs->string(lambda(paradigmadocs)
                                (if (conectado? (getListaUsuario paradigmadocs))
                                    ; caso verdadero
-                                   0
+                                   (string-append
+                                    "DUCKDOCS:\n Bienvenido "
+                                    (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs)))
+                                    " (fecha de creacion: "
+                                    (fecha->string (getfecha(buscarConectado(getListaUsuario paradigmadocs))))
+                                    "). Su lista de documentos es:\n"
+                                    (listaDocumento->string (filter (lambda(documento)(equal? (getAutor documento) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs))))) (getListaDocumentos paradigmadocs))"" 1 (getFD paradigmadocs))
+                                    "\n Los documentos que han sido compartido con su cuenta son:\n"
+                                    (listaDocumento->string (filter (lambda(documento)(tienePermiso? (getListaPermiso documento) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs))))) (getListaDocumentos paradigmadocs)) "" 1 (getFD paradigmadocs))
+                                    "\n\n Plataforma creada por Leo Vergara Sepulveda. Fecha de creacion: "
+                                    (fecha->string (getFecha paradigmadocs))
+                                    ". DuckDocs©."
+                                    )
                                    ; caso falso
-                                   "DUCKDOCS:\n Los documentos presente en la plataforma DuckDocs son."
+                                   (string-append
+                                    "DUCKDOCS:\n Los documentos presente en la plataforma DuckDocs son:\n"
+                                    (listaDocumento->string (getListaDocumentos paradigmadocs) "" 1 (getFD paradigmadocs))
+                                    "\n\n Plataforma creada por Leo Vergara Sepulveda. Fecha de creacion: "
+                                    (fecha->string (getFecha paradigmadocs))
+                                    ". DuckDocs©."
+                                    )
                                    )
                                )
   )
@@ -519,4 +563,5 @@
 (define gDocs12 ((login gDocs11 "user1" "pass1" add) 3 (fecha 8 11 2021) "mas contenido para el texto"))
 (define gDocs13 ((login gDocs12 "user1" "pass1" add) 3 (fecha 9 11 2021) "aun mas contenido"))
 (define gDocs14 ((login gDocs13 "user1" "pass1" search) "contenido"))
+(define gDocs15 (login gDocs13 "user1" "pass1" paradigmadocs->string))
 ;(define gDocs12 (login gDocs11 "user2" "pass2" revokeAllAccesses))
