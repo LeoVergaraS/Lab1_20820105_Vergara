@@ -605,6 +605,37 @@
   )
 
 ; applyStyles
+(define generar(lambda(estilo)
+                 (list->string (list #\# #\\ estilo))
+                 )
+  )
+
+(define aplicar(lambda(searchText styles)
+                 (if (null? styles)
+                     ; caso verdadero
+                     searchText
+                     ; caso falso
+                     (aplicar (string-append (generar (car styles)) " " searchText " " (generar (car styles))) (cdr styles))
+                     )
+                 )
+  )
+
+(define applyStyles(lambda(paradigmadocs)(lambda(idDoc fecha searchText . styles)
+                                                (if (conectado? (getListaUsuario paradigmadocs))
+                                                    ; caso verdadero
+                                                    (if (or (equal? (getAutor(list-ref(getListaDocumentos paradigmadocs) (- idDoc 1))) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs))))
+                                                            (tienePermisoEscritura? (getListaPermiso (list-ref(getListaDocumentos paradigmadocs) (- idDoc 1))) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs)))))
+                                                        ; caso verdadero
+                                                        (setListaUsuario (setListaDocumentos paradigmadocs (actualizarListaDocumentos (getListaDocumentos paradigmadocs)(setContenido (setListaHistorial (list-ref(getListaDocumentos paradigmadocs) (- idDoc 1)) (agregarListaHistorial (getListaHistorial(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1))) 0 (getContenido(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1))) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs))) fecha)) ((getFE paradigmadocs) (reemplazarEncap ((getFD paradigmadocs)(getContenido(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1)))) (aplicar searchText styles) searchText))))) (agregaLista (getListaUsuario paradigmadocs) (setEstado (buscarConectado(getListaUsuario paradigmadocs)) "Desconectado")))
+                                                        ; caso falso
+                                                        (setListaUsuario paradigmadocs (agregaLista (getListaUsuario paradigmadocs) (setEstado (buscarConectado(getListaUsuario paradigmadocs)) "Desconectado")))
+                                                        )
+                                                    ; caso falso
+                                                    paradigmadocs
+                                                    )
+                                                )
+                          )
+  )
 ; comment
 ; ctrlZ y ctrlY
 
@@ -667,4 +698,5 @@
 (define gDocs16 ((login gDocs13 "user1" "pass1" delete) 1 (fecha 9 11 2021) 3))
 (define gDocs17 ((login gDocs16 "user1" "pass1" delete) 1 (fecha 10 11 2021) 10))
 (define gDocs18 ((login gDocs17 "user1" "pass1" searchAndReplace) 4 (fecha 10 11 2021) "contenido" "tema"))
+(define gDocs19 ((login gDocs18 "user1" "pass1" applyStyles) 4 (fecha 10 11 2021) "tema" #\t #\n))
 ;(define gDocs12 (login gDocs11 "user2" "pass2" revokeAllAccesses))
