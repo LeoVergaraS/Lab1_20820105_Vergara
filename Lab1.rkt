@@ -531,6 +531,79 @@
                 )
   )
 ; searchAndReplace
+(define soniguales(lambda (string substring v1)
+                    (if (null? substring)
+                        ; caso verdadero
+                        v1
+                        ; caso falso
+                        (if (null? string)
+                            ; caso verdadero
+                            #f
+                            ; caso falso
+                            (if (equal? (car string) (car substring))
+                                ; caso verdadero
+                                (soniguales (cdr string) (cdr substring) #t)
+                                ; caso falso
+                                #f)
+                            )
+                        )
+                    )
+  )
+
+(define posiciones(lambda(listaString listaSubstring i listaPos)
+                    (if (null? listaString)
+                               ; caso verdadero
+                               (reverse listaPos)
+                               ; caso falso
+                               (if (equal? (car listaString) (car listaSubstring))
+                                   ; caso verdader
+                                   (if (soniguales listaString listaSubstring #t)
+                                       ; caso verdadero
+                                       (posiciones (cdr listaString) listaSubstring (+ i 1) (cons i listaPos))
+                                       ; caso falso
+                                       (posiciones (cdr listaString) listaSubstring (+ i 1) listaPos)
+                                       )
+                                   ; caso falso
+                                   (posiciones (cdr listaString) listaSubstring (+ i 1) listaPos)))
+                    )
+  )
+
+(define string-search-all(lambda(string substring)
+                           (posiciones (string->list string) (string->list substring) 0 null)
+                           )
+  )
+
+(define reemplazar(lambda(contenido replaceText stringAux lisPos i searchText)
+                      (if (null? lisPos)
+                          ; caso verdadero
+                          (string-append stringAux (substring contenido i (string-length contenido)))
+                          ; caso falso
+                          (reemplazar contenido replaceText (string-append stringAux (substring contenido i (car lisPos)) replaceText) (cdr lisPos) (+ (car lisPos) (string-length searchText)) searchText))
+                    ))
+
+
+
+(define reemplazarEncap(lambda (contenido replaceText searchText)
+                         (reemplazar contenido replaceText "" (string-search-all contenido searchText) 0 searchText)
+                         )
+  )
+(define searchAndReplace(lambda(paradigmadocs)(lambda(idDoc fecha searchText replaceText)
+                                                (if (conectado? (getListaUsuario paradigmadocs))
+                                                    ; caso verdadero
+                                                    (if (or (equal? (getAutor(list-ref(getListaDocumentos paradigmadocs) (- idDoc 1))) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs))))
+                                                            (tienePermisoEscritura? (getListaPermiso (list-ref(getListaDocumentos paradigmadocs) (- idDoc 1))) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs)))))
+                                                        ; caso verdadero
+                                                        (setListaUsuario (setListaDocumentos paradigmadocs (actualizarListaDocumentos (getListaDocumentos paradigmadocs)(setContenido (setListaHistorial (list-ref(getListaDocumentos paradigmadocs) (- idDoc 1)) (agregarListaHistorial (getListaHistorial(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1))) 0 (getContenido(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1))) (getNombreusuario(buscarConectado(getListaUsuario paradigmadocs))) fecha)) ((getFE paradigmadocs)(reemplazarEncap ((getFD paradigmadocs)(getContenido(list-ref(getListaDocumentos paradigmadocs)(- idDoc 1)))) replaceText searchText))))) (agregaLista (getListaUsuario paradigmadocs) (setEstado (buscarConectado(getListaUsuario paradigmadocs)) "Desconectado")))
+                                                        ; caso falso
+                                                        (setListaUsuario paradigmadocs (agregaLista (getListaUsuario paradigmadocs) (setEstado (buscarConectado(getListaUsuario paradigmadocs)) "Desconectado")))
+                                                        )
+                                                    ; caso falso
+                                                    paradigmadocs
+                                                    )
+                                                )
+                          )
+  )
+
 ; applyStyles
 ; comment
 ; ctrlZ y ctrlY
@@ -587,10 +660,11 @@
 (define gDocs10  ((login gDocs9 "user2" "pass2" share) 4 (acceso "user1" #\w) (acceso "user3" #\r) (acceso "user4" #\r)))
 
 (define gDocs11 ((login gDocs10 "user2" "pass2" share) 2 (acceso "user1" #\c)))
-(define gDocs12 ((login gDocs11 "user1" "pass1" add) 3 (fecha 8 11 2021) "mas contenido para el texto"))
-(define gDocs13 ((login gDocs12 "user1" "pass1" add) 3 (fecha 9 11 2021) "aun mas contenido"))
+(define gDocs12 ((login gDocs11 "user1" "pass1" add) 4 (fecha 8 11 2021) "mas contenido para el texto"))
+(define gDocs13 ((login gDocs12 "user1" "pass1" add) 4 (fecha 9 11 2021) "aun mas contenido"))
 (define gDocs14 ((login gDocs13 "user1" "pass1" search) "contenido"))
 (define gDocs15 (login gDocs13 "user1" "pass1" paradigmadocs->string))
 (define gDocs16 ((login gDocs13 "user1" "pass1" delete) 1 (fecha 9 11 2021) 3))
 (define gDocs17 ((login gDocs16 "user1" "pass1" delete) 1 (fecha 10 11 2021) 10))
+(define gDocs18 ((login gDocs17 "user1" "pass1" searchAndReplace) 4 (fecha 10 11 2021) "contenido" "tema"))
 ;(define gDocs12 (login gDocs11 "user2" "pass2" revokeAllAccesses))
