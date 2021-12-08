@@ -7,6 +7,7 @@
 (require "TDAacceso.rkt")
 (require "TDAhistorial.rkt")
 
+; (Obligatorias)
 ; Register
 
 ; Descripcion: funcion que verifica si existe un nombre de usuario en la lista de usuario.
@@ -1472,32 +1473,87 @@
 ; Test                                                                                                                       :
 ;:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+; Se crea la plataforma.
 (define DuckDocsVacio(paradigmadocs "DuckDocs" (fecha 1 11 2021) encryptFunction DecryptFunction))
-(define gDocs1
-(register (register (register DuckDocsVacio (fecha 25 10 2021) "user1" "pass1") (fecha 25 10 2021) "user2"
-"pass2") (fecha 25 10 2021) "user3" "pass3"))
 
+; Register
+(define gDocs1 (register DuckDocsVacio (fecha 25 10 2021) "user1" "pass1")) ; se registra usuario 1
+(define gDocs2 (register gDocs1 (fecha 25 10 2021) "user2" "pass2")) ; se registra usuario 1
+(define gDocs3 (register gDocs2 (fecha 25 10 2021) "user3" "pass3")) ; se registra usuario 1
+(define gDocs4 (register gDocs3 (fecha 25 10 2021) "user1" "pass4")) ; no se registra al usuario, nombre igual al usuario 1
 
-(define gDocs2 ((login gDocs1 "user1" "pass1" create) (fecha 30 08 2021) "doc3" "contenido doc3"))
-(define gDocs3 ((login gDocs2 "user2" "pass2" create) (fecha 30 08 2021) "doc0" "contenido doc0"))
-(define gDocs4 ((login gDocs3 "user2" "pass2" create) (fecha 30 08 2021) "doc1" "contenido doc1"))
-(define gDocs5 ((login gDocs4 "user1" "pass1" create) (fecha 30 08 2021) "doc0" "contenido doc0"))
-(define gDocs6 ((login gDocs5 "user2" "pass2" create) (fecha 30 08 2021) "doc5" "contenido doc5"))
-(define gDocs7 ((login gDocs6 "user3" "pass3" create) (fecha 30 08 2021) "doc1" "contenido doc1"))
-(define gDocs8 ((login gDocs7 "user2" "pass2" create) (fecha 30 08 2021) "doc10" "contenido doc10"))
-(define gDocs9 ((login gDocs8 "user3" "pass3" create) (fecha 30 08 2021) "doc2" "contenido doc2"))
+; Login, se utilizara la funcion create pero no se dejara registro en la plataforma.
+(define gDocs5 ((login gDocs4 "user1" "pass1" create) (fecha 30 08 2021) "doc0" "contenido doc0")) ; usuario 1 se logea y crea doc0
+(define gDocs6 ((login gDocs4 "user2" "pass2" create) (fecha 30 08 2021) "doc0" "contenido doc0")) ; usuario 2 se logea y crea doc0
+(define gDocs7 ((login gDocs4 "user3" "pass3" create) (fecha 30 08 2021) "doc0" "contenido doc0")) ; usuario 3 se logea y crea doc0
 
+; Create 
+(define gDocs8 ((login gDocs4 "user1" "pass1" create) (fecha 30 08 2021) "doc3" "contenido doc3")) ; usuario 1 crea doc3
+(define gDocs9 ((login gDocs8 "user2" "pass2" create) (fecha 30 08 2021) "doc0" "contenido doc0")) ; usuario 2 crea doc0
+(define gDocs10 ((login gDocs9 "user2" "pass2" create) (fecha 30 08 2021) "doc1" "contenido doc1")) ; usuario 2 crea doc1
+(define gDocs11 ((login gDocs10 "user1" "pass1" create) (fecha 30 08 2021) "doc0" "contenido doc0")) ; usuario 1 crea doc0
+(define gDocs12 ((login gDocs11 "user2" "pass2" create) (fecha 30 08 2021) "doc5" "contenido doc5")) ; usuario 2 crea doc5
+(define gDocs13 ((login gDocs12 "user3" "pass3" create) (fecha 30 08 2021) "doc1" "contenido doc1")) ; usuario 3 crea doc1
+(define gDocs14 ((login gDocs13 "user2" "pass2" create) (fecha 30 08 2021) "doc10" "contenido doc10")) ; usuario 2 crea doc10
+(define gDocs15 ((login gDocs14 "user3" "pass3" create) (fecha 30 08 2021) "doc2" "contenido doc2")) ; usuario 3 crea doc2
 
-(define gDocs10  ((login gDocs9 "user2" "pass2" share) 4 (acceso "user1" #\w) (acceso "user3" #\w) (acceso "user4" #\r)))
+; Share
+(define gDocs16 ((login gDocs15 "user2" "pass2" share) 4 (acceso "user1" #\w) (acceso "user3" #\w))) ; usuario 2 comparte su cuarto documento con usuario 1 y 3 con permiso de escritura.
+(define gDocs17 ((login gDocs16 "user2" "pass2" share) 2 (acceso "user1" #\c))) ; usuario 2 comparte su segundo documento con usuario 1 para que comente.
+(define gDocs18 ((login gDocs17 "user1" "pass1" share) 10 (acceso "user2" #\c))) ; usuario 1 comparte un archivo que no tiene, no se registra en la plataforma.
+(define gDocs19 ((login gDocs18 "user3" "pass3" share) 1 (acceso "user1" #\r) (acceso "user2" #\r))) ; usuario 3 comparte su primer documento con usuario 1 y usuario 2 con permiso de lectura.
+(define gDocs20 ((login gDocs19 "user3" "pass3" share) 1 (acceso "user1" #\c))) ; usuario 3 cambia el permiso que le dio al usuario 1 en su primer documento.
 
-(define gDocs11 ((login gDocs10 "user2" "pass2" share) 2 (acceso "user1" #\c)))
-(define gDocs12 ((login gDocs11 "user1" "pass1" add) 4 (fecha 8 11 2021) "mas contenido para el texto"))
-(define gDocs13 ((login gDocs12 "user1" "pass1" add) 4 (fecha 9 11 2021) "aun mas contenido"))
-(define gDocs14 ((login gDocs13 "user1" "pass1" search) "contenido"))
-(define gDocs15 (login gDocs13 "user3" "pass3" paradigmadocs->string))
-(define gDocs16 ((login gDocs13 "user1" "pass1" delete) 1 (fecha 9 11 2021) 3))
-(define gDocs17 ((login gDocs16 "user1" "pass1" delete) 1 (fecha 10 11 2021) 10))
-(define gDocs18 ((login gDocs17 "user1" "pass1" searchAndReplace) 4 (fecha 10 11 2021) "contenido" "tema"))
-(define gDocs19 ((login gDocs18 "user1" "pass1" applyStyles) 4 (fecha 10 11 2021) "tema" #\t #\n))
-;(define gDocs12 (login gDocs11 "user2" "pass2" revokeAllAccesses))
+; Add
+(define gDocs21 ((login gDocs20 "user1" "pass1" add) 4 (fecha 8 11 2021) "mas contenido para el texto")) ; usuario 1 agrega mas contenido a un documento de su propiedad.
+(define gDocs22 ((login gDocs21 "user1" "pass1" add) 5 (fecha 8 11 2021) "mas contenido para el texto")) ; usuario 1 agrega mas contenido a un documento donde no tiene permiso y no es propietario, no se registra en la plataforma.
+(define gDocs23 ((login gDocs22 "user3" "pass3" add) 7 (fecha 8 11 2021) "mas contenido para el texto")) ; usuario 3 agrega mas contenido a un documento donde tiene permiso de escritura.
+(define gDocs24 ((login gDocs23 "user2" "pass2" add) 7 (fecha 8 11 2021) "mas contenido para el texto")) ; usuario 2 agrega mas contenido a un documento de su propiedad.
+
+; RestoreVersion, solo el propietario puede hacerlo.
+(define gDocs25 ((login gDocs24 "user1" "pass1" restoreVersion) 4 0)) ; usuario 1 restaura la version original del documento.
+(define gDocs26 ((login gDocs25 "user2" "pass2" restoreVersion) 7 1)) ; usuario 2 restaura la version 1 del documento.
+(define gDocs27 ((login gDocs26 "user3" "pass3" restoreVersion) 7 0)) ; usuario 3 intenta restaurar la version original del documento del usuario 2, no se registra en la plataforma
+
+; revokeAllAccesses, no se dejara registro en la plataforma para probar las siguientes funciones.
+(define gDocs28 (login gDocs27 "user2" "pass2" revokeAllAccesses)) ; usuario 2 revoca todos los accesos a sus documentos 
+(define gDocs29 (login gDocs27 "user1" "pass1" revokeAllAccesses)) ; usuario 1 revoca todos los accesos a sus documentos
+(define gDocs30 (login gDocs27 "user3" "pass3" revokeAllAccesses)) ; usuario 3 revoca todos los accesos a sus documentos
+
+; search
+(define gDocs31 ((login gDocs27 "user1" "pass1" search) "contenido")) ; el usuario 1 busca en sus documentos o los compartidos la palabra contenido
+(define gDocs32 ((login gDocs27 "user2" "pass2" search) "contenido")) ; el usuario 2 busca en sus documentos o los compartidos la palabra contenido
+(define gDocs33 ((login gDocs27 "user3" "pass3" search) "contenido")) ; el usuario 3 busca en sus documentos o los compartidos la palabra contenido
+(define gDocs34 ((login gDocs27 "user3" "pass3" search) "doc1")) ; el usuario 3 busca en sus documentos o los compartidos la palabra doc1
+
+; paradigmadocs->string
+(define gDocs35 (login gDocs27 "user1" "pass1" paradigmadocs->string)) ; el usuario 1 quiere ver su informacion en la plataforma
+(define gDocs36 (login gDocs27 "user2" "pass2" paradigmadocs->string)) ; el usuario 2 quiere ver su informacion en la plataforma
+(define gDocs37 (login gDocs27 "user3" "pass3" paradigmadocs->string)) ; el usuario 3 quiere ver su informacion en la plataforma
+(define gDocs38 (paradigmadocs->string gDocs27)) ; Se ve la informacion en la plataforma en general.
+
+; delete
+(define gDocs39 ((login gDocs27 "user1" "pass1" delete) 1 (fecha 9 11 2021) 3))
+(define gDocs40 ((login gDocs39 "user2" "pass2" delete) 3 (fecha 10 11 2021) 4))
+(define gDocs41 ((login gDocs40 "user3" "pass3" delete) 8 (fecha 10 11 2021) 10))
+
+; searchAndReplace
+(define gDocs42 ((login gDocs41 "user1" "pass1" searchAndReplace) 4 (fecha 10 11 2021) "contenido" "tema"))
+(define gDocs43 ((login gDocs42 "user2" "pass2" searchAndReplace) 2 (fecha 10 11 2021) "contenido" "tema"))
+(define gDocs44 ((login gDocs43 "user3" "pass3" searchAndReplace) 7 (fecha 10 11 2021) "contenido" "tema"))
+
+; applyStyles
+(define gDocs45 ((login gDocs44 "user1" "pass1" applyStyles) 4 (fecha 10 11 2021) "tema" #\t #\n))
+(define gDocs46 ((login gDocs45 "user2" "pass2" applyStyles) 2 (fecha 10 11 2021) "tema" #\t #\n))
+(define gDocs47 ((login gDocs46 "user3" "pass3" applyStyles) 7 (fecha 10 11 2021) "tema" #\t #\n))
+
+; EncryptFuction y DecryptFunction
+(define encriptado1 (encryptFunction "contenido de un documento"))
+(define encriptado2 (encryptFunction "cambio las vocales por letras griegas"))
+(define encriptado3 (encryptFunction "mas contenido de un documento"))
+
+(define desencriptado1 (DecryptFunction "cξntωnζdξ dω ρn dξcρmωntξ"))
+(define desencriptado2 (DecryptFunction "cψmbζξ lψs vξcψlωs pξr lωtrψs grζωgψs"))
+(define desencriptado3 (DecryptFunction "mψs cξntωnζdξ dω ρn dξcρmωntξ"))
+
 ;:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
